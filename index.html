@@ -14,13 +14,45 @@
             <div class="col-md-8 mx-auto">
                 <h2>Instructions</h2>
                 <div class="alert alert-info">
-                    <p><strong>CSV Format:</strong></p>
-                    <ul class="mb-0">
-                        <li>First row: Headers</li>
-                        <li>Participant columns: Names in separate columns</li>
-                        <li>Empty column: Separates participants from restrictions</li>
-                        <li>Restriction columns: Names that shouldn't be together</li>
-                    </ul>
+                    <h5>How to prepare your CSV file:</h5>
+                    
+                    <div class="mb-3">
+                        <strong>1. Participant Columns:</strong>
+                        <ul class="mb-2">
+                            <li>Put participant names in separate columns (e.g., one column per bunk, team, or category)</li>
+                            <li>First row should contain headers describing each group</li>
+                            <li>Each participant goes in a separate row under their respective column</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>2. Restrictions (Optional):</strong>
+                        <ul class="mb-2">
+                            <li>Leave an empty column after your participant columns</li>
+                            <li>Add restriction columns with names that shouldn't be in the same group</li>
+                            <li>Put names that can't be together in the same row</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Example CSV structure:</strong>
+                        <div class="border p-2 bg-light font-monospace small">
+                            Bunk A,Bunk B,Bunk C,,Restriction 1,Restriction 2<br>
+                            Alice,Bob,Charlie,,Alice,Bob<br>
+                            David,Emma,Frank,,David,Emma<br>
+                            Grace,Henry,Ian,,Grace,Henry
+                        </div>
+                        <small class="text-muted">This ensures proportional representation from each bunk while keeping restricted pairs apart.</small>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <strong>💡 Tips:</strong>
+                        <ul class="mb-0">
+                            <li>The tool will try to create groups with equal representation from each participant column</li>
+                            <li>If restrictions can't be avoided, the tool will minimize violations</li>
+                            <li>You can generate multiple times to get different random combinations</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <h2>Upload CSV</h2>
