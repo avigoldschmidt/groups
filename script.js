@@ -227,8 +227,13 @@ function displayGroups(groups) {
     groups.forEach((group, index) => {
         html += `<div class="mb-3">
             <h4>Group ${index + 1}</h4>
-            <p>${group.join(', ')}</p>
-        </div>`;
+            <ul>`;
+        
+        group.forEach(member => {
+            html += `<li>${member}</li>`;
+        });
+        
+        html += '</ul></div>';
     });
     
     html += '<button class="btn btn-primary mt-3" onclick="copyResults()">Copy Results</button></div>';
@@ -242,8 +247,13 @@ function copyResults() {
     
     groups.forEach(group => {
         const title = group.querySelector('h4').textContent;
-        const members = group.querySelector('p').textContent;
-        text += `${title}: ${members}\n`;
+        const members = Array.from(group.querySelectorAll('li')).map(li => li.textContent);
+        
+        text += `${title}:\n`;
+        members.forEach(member => {
+            text += `- ${member}\n`;
+        });
+        text += '\n';
     });
     
     navigator.clipboard.writeText(text).then(() => {

@@ -36,12 +36,44 @@
                     
                     <div class="mb-3">
                         <strong>Example CSV structure:</strong>
-                        <div class="border p-2 bg-light font-monospace small">
-                            Bunk A,Bunk B,Bunk C,,Restriction 1,Restriction 2<br>
-                            Alice,Bob,Charlie,,Alice,Bob<br>
-                            David,Emma,Frank,,David,Emma<br>
-                            Grace,Henry,Ian,,Grace,Henry
-                        </div>
+                        <table class="table table-bordered table-sm mt-2">
+                            <thead>
+                                <tr>
+                                    <th>Bunk A</th>
+                                    <th>Bunk B</th>
+                                    <th>Bunk C</th>
+                                    <th></th>
+                                    <th>Restriction 1</th>
+                                    <th>Restriction 2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Alice</td>
+                                    <td>Bob</td>
+                                    <td>Charlie</td>
+                                    <td></td>
+                                    <td>Alice</td>
+                                    <td>Bob</td>
+                                </tr>
+                                <tr>
+                                    <td>David</td>
+                                    <td>Emma</td>
+                                    <td>Frank</td>
+                                    <td></td>
+                                    <td>David</td>
+                                    <td>Emma</td>
+                                </tr>
+                                <tr>
+                                    <td>Grace</td>
+                                    <td>Henry</td>
+                                    <td>Ian</td>
+                                    <td></td>
+                                    <td>Grace</td>
+                                    <td>Henry</td>
+                                </tr>
+                            </tbody>
+                        </table>
                         <small class="text-muted">This ensures proportional representation from each bunk while keeping restricted pairs apart.</small>
                     </div>
                     
