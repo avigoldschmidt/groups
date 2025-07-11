@@ -4,12 +4,14 @@ let participantsByColumn = [];
 let restrictions = new Set();
 
 // DOM elements
-const fileInput = document.getElementById('fileInput');
-const generateBtn = document.getElementById('generateBtn');
-const resultsDiv = document.getElementById('results');
+let fileInput, generateBtn, resultsDiv;
 
 // Initialize event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    fileInput = document.getElementById('fileInput');
+    generateBtn = document.getElementById('generateBtn');
+    resultsDiv = document.getElementById('results');
+    
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             handleFile(e.target.files[0]);
