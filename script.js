@@ -34,9 +34,22 @@ function setupEventListeners() {
         }
     });
 
-    uploadArea.addEventListener('click', () => {
-        fileInput.click();
+    // Click on upload area (but not on button)
+    uploadArea.addEventListener('click', (e) => {
+        // Don't trigger if clicking on the button
+        if (e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
     });
+
+    // Button click
+    const chooseFileBtn = document.getElementById('chooseFileBtn');
+    if (chooseFileBtn) {
+        chooseFileBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            fileInput.click();
+        });
+    }
 
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
@@ -54,14 +67,11 @@ function handleFile(file) {
         
         // Update upload area to show file loaded
         uploadArea.innerHTML = `
-            <div class="upload-icon">
-                <i class="fas fa-check-circle text-success"></i>
-            </div>
-            <div class="upload-text text-success">
+            <div class="text-success">
                 <strong>${file.name}</strong> loaded successfully!
             </div>
-            <button class="btn btn-modern" type="button" onclick="document.getElementById('fileInput').click()">
-                <i class="fas fa-sync"></i> Choose Different File
+            <button class="btn btn-outline-primary mt-2" type="button" onclick="document.getElementById('fileInput').click()">
+                Choose Different File
             </button>
         `;
         
@@ -170,7 +180,7 @@ function generateGroups() {
     }
     
     // Show loading state
-    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    generateBtn.innerHTML = 'Generating...';
     generateBtn.disabled = true;
     
     // Use setTimeout to allow UI to update
@@ -179,7 +189,7 @@ function generateGroups() {
         displayGroups(groups);
         
         // Reset button
-        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Groups';
+        generateBtn.innerHTML = 'Generate Groups';
         generateBtn.disabled = false;
         
         // Scroll to results
@@ -280,33 +290,36 @@ function countViolations(group, restrictions) {
 }
 
 function displayGroups(groups) {
-    let html = '<div class="section"><h2>Generated Groups</h2>';
+    let html = '<div class="mt-4"><h2>Generated Groups</h2><div class="row">';
     
     groups.forEach((group, index) => {
-        html += `<div class="group">
-            <h3>Group ${index + 1}</h3>`;
+        html += `<div class="col-md-6 col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Group ${index + 1}</h5>
+                </div>
+                <div class="card-body">`;
         
         group.forEach(member => {
-            html += `<div class="member">${member}</div>`;
+            html += `<div class="badge bg-primary me-1 mb-1">${member}</div>`;
         });
         
-        html += '</div>';
+        html += '</div></div></div>';
     });
     
-    html += '<button onclick="copyResults()" style="margin-top: 20px;">Copy Results</button>';
-    html += '</div>';
+    html += '</div><button class="btn btn-outline-success mt-3" onclick="copyResults()">Copy Results</button></div>';
     
     resultsDiv.innerHTML = html;
 }
 
 function copyResults() {
-    const groups = document.querySelectorAll('.group');
+    const cards = document.querySelectorAll('.card');
     let text = '';
     
-    groups.forEach(group => {
-        const title = group.querySelector('h3').textContent;
-        const members = Array.from(group.querySelectorAll('.member'))
-            .map(member => member.textContent);
+    cards.forEach(card => {
+        const title = card.querySelector('.card-title').textContent;
+        const members = Array.from(card.querySelectorAll('.badge'))
+            .map(badge => badge.textContent);
         
         text += `${title}:\n`;
         members.forEach(member => {
@@ -318,7 +331,7 @@ function copyResults() {
     navigator.clipboard.writeText(text).then(() => {
         showMessage('Results copied to clipboard!', 'success');
     }).catch(() => {
-        showMessage('Could not copy to clipboard', 'error');
+        showMessage('Could not copy to clipboard', 'danger');
     });
 }
 
