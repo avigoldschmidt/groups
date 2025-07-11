@@ -4,59 +4,18 @@ let participantsByColumn = [];
 let restrictions = new Set();
 
 // DOM elements
-const uploadArea = document.getElementById('uploadArea');
 const fileInput = document.getElementById('fileInput');
 const generateBtn = document.getElementById('generateBtn');
 const resultsDiv = document.getElementById('results');
 
 // Initialize event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    setupEventListeners();
-});
-
-function setupEventListeners() {
-    // Drag and drop functionality
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
-
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-    });
-
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0 && files[0].type === 'text/csv') {
-            handleFile(files[0]);
-        }
-    });
-
-    // Click on upload area (but not on button)
-    uploadArea.addEventListener('click', (e) => {
-        // Don't trigger if clicking on the button
-        if (e.target.tagName !== 'BUTTON') {
-            fileInput.click();
-        }
-    });
-
-    // Button click
-    const chooseFileBtn = document.getElementById('chooseFileBtn');
-    if (chooseFileBtn) {
-        chooseFileBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent event bubbling
-            fileInput.click();
-        });
-    }
-
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             handleFile(e.target.files[0]);
         }
     });
-}
+});
 
 function handleFile(file) {
     const reader = new FileReader();
@@ -64,23 +23,6 @@ function handleFile(file) {
         csvData = e.target.result;
         parseCSV(csvData);
         generateBtn.disabled = false;
-        
-        // Hide the upload section and show file loaded message
-        document.getElementById('uploadSection').style.display = 'none';
-        
-        // Show file loaded message
-        const fileLoadedMessage = document.getElementById('fileLoadedMessage');
-        fileLoadedMessage.innerHTML = `
-            <div class="alert alert-success">
-                <strong>File loaded:</strong> ${file.name}
-                <button class="btn btn-sm btn-outline-primary ms-2" onclick="location.reload()">
-                    Upload Different File
-                </button>
-            </div>
-        `;
-        fileLoadedMessage.style.display = 'block';
-        
-        showMessage(`CSV file "${file.name}" loaded successfully!`, 'success');
     };
     reader.readAsText(file);
 }
@@ -173,36 +115,19 @@ function generateGroups() {
     const numGroups = parseInt(document.getElementById('numGroups').value);
     
     if (!numGroups || numGroups <= 0) {
-        showMessage('Please enter a valid number of groups', 'danger');
+        alert('Please enter a valid number of groups');
         return;
     }
     
     const allParticipants = participantsByColumn.flat();
     
     if (numGroups > allParticipants.length) {
-        showMessage(`Cannot create ${numGroups} groups with only ${allParticipants.length} participants!`, 'danger');
+        alert(`Cannot create ${numGroups} groups with only ${allParticipants.length} participants!`);
         return;
     }
     
-    // Show loading state
-    generateBtn.innerHTML = 'Generating...';
-    generateBtn.disabled = true;
-    
-    // Use setTimeout to allow UI to update
-    setTimeout(() => {
-        const groups = createRandomGroups(participantsByColumn, numGroups, restrictions);
-        displayGroups(groups);
-        
-        // Reset button
-        generateBtn.innerHTML = 'Generate Groups';
-        generateBtn.disabled = false;
-        
-        // Scroll to results
-        document.getElementById('results').scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-        });
-    }, 100);
+    const groups = createRandomGroups(participantsByColumn, numGroups, restrictions);
+    displayGroups(groups);
 }
 
 function createRandomGroups(participantsByColumn, numGroups, restrictions, maxAttempts = 5000) {
@@ -295,70 +220,33 @@ function countViolations(group, restrictions) {
 }
 
 function displayGroups(groups) {
-    let html = '<div class="mt-4"><h2>Generated Groups</h2><div class="row">';
+    let html = '<div class="mt-4"><h2>Generated Groups</h2>';
     
     groups.forEach((group, index) => {
-        html += `<div class="col-md-6 col-lg-4 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Group ${index + 1}</h5>
-                </div>
-                <div class="card-body">`;
-        
-        group.forEach(member => {
-            html += `<div class="badge bg-primary me-1 mb-1">${member}</div>`;
-        });
-        
-        html += '</div></div></div>';
+        html += `<div class="mb-3">
+            <h4>Group ${index + 1}</h4>
+            <p>${group.join(', ')}</p>
+        </div>`;
     });
     
-    html += '</div><button class="btn btn-outline-success mt-3" onclick="copyResults()">Copy Results</button></div>';
+    html += '<button class="btn btn-primary mt-3" onclick="copyResults()">Copy Results</button></div>';
     
     resultsDiv.innerHTML = html;
 }
 
 function copyResults() {
-    const cards = document.querySelectorAll('.card');
+    const groups = document.querySelectorAll('#results > div > div');
     let text = '';
     
-    cards.forEach(card => {
-        const title = card.querySelector('.card-title').textContent;
-        const members = Array.from(card.querySelectorAll('.badge'))
-            .map(badge => badge.textContent);
-        
-        text += `${title}:\n`;
-        members.forEach(member => {
-            text += `${member}\n`;
-        });
-        text += '\n';
+    groups.forEach(group => {
+        const title = group.querySelector('h4').textContent;
+        const members = group.querySelector('p').textContent;
+        text += `${title}: ${members}\n`;
     });
     
     navigator.clipboard.writeText(text).then(() => {
-        showMessage('Results copied to clipboard!', 'success');
+        alert('Results copied to clipboard!');
     }).catch(() => {
-        showMessage('Could not copy to clipboard', 'danger');
+        alert('Could not copy to clipboard');
     });
-}
-
-function showMessage(message, type) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    const existingAlert = document.querySelector('.alert');
-    if (existingAlert) {
-        existingAlert.remove();
-    }
-    
-    resultsDiv.insertBefore(alertDiv, resultsDiv.firstChild);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
-        }
-    }, 5000);
 }
