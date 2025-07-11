@@ -51,7 +51,21 @@ function handleFile(file) {
         csvData = e.target.result;
         parseCSV(csvData);
         generateBtn.disabled = false;
-        showMessage('CSV file loaded successfully!', 'success');
+        
+        // Update upload area to show file loaded
+        uploadArea.innerHTML = `
+            <div class="upload-icon">
+                <i class="fas fa-check-circle text-success"></i>
+            </div>
+            <div class="upload-text text-success">
+                <strong>${file.name}</strong> loaded successfully!
+            </div>
+            <button class="btn btn-modern" type="button" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-sync"></i> Choose Different File
+            </button>
+        `;
+        
+        showMessage(`CSV file "${file.name}" loaded successfully!`, 'success');
     };
     reader.readAsText(file);
 }
@@ -155,8 +169,25 @@ function generateGroups() {
         return;
     }
     
-    const groups = createRandomGroups(participantsByColumn, numGroups, restrictions);
-    displayGroups(groups);
+    // Show loading state
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    generateBtn.disabled = true;
+    
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+        const groups = createRandomGroups(participantsByColumn, numGroups, restrictions);
+        displayGroups(groups);
+        
+        // Reset button
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Groups';
+        generateBtn.disabled = false;
+        
+        // Scroll to results
+        document.getElementById('results').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }, 100);
 }
 
 function createRandomGroups(participantsByColumn, numGroups, restrictions, maxAttempts = 5000) {
@@ -249,35 +280,32 @@ function countViolations(group, restrictions) {
 }
 
 function displayGroups(groups) {
-    let html = '<div class="results-container"><h2><i class="fas fa-users"></i> Generated Groups</h2>';
+    let html = '<div class="section"><h2>Generated Groups</h2>';
     
     groups.forEach((group, index) => {
-        html += `<div class="card group-card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-users"></i> Group ${index + 1}</h5>
-            </div>
-            <div class="card-body">`;
+        html += `<div class="group">
+            <h3>Group ${index + 1}</h3>`;
         
         group.forEach(member => {
-            html += `<div class="group-member">${member}</div>`;
+            html += `<div class="member">${member}</div>`;
         });
         
-        html += '</div></div>';
+        html += '</div>';
     });
     
-    html += '<button class="btn btn-success mt-3" onclick="copyResults()"><i class="fas fa-copy"></i> Copy Results</button>';
+    html += '<button onclick="copyResults()" style="margin-top: 20px;">Copy Results</button>';
     html += '</div>';
     
     resultsDiv.innerHTML = html;
 }
 
 function copyResults() {
-    const groups = document.querySelectorAll('.group-card');
+    const groups = document.querySelectorAll('.group');
     let text = '';
     
     groups.forEach(group => {
-        const title = group.querySelector('h5').textContent;
-        const members = Array.from(group.querySelectorAll('.group-member'))
+        const title = group.querySelector('h3').textContent;
+        const members = Array.from(group.querySelectorAll('.member'))
             .map(member => member.textContent);
         
         text += `${title}:\n`;
@@ -290,7 +318,7 @@ function copyResults() {
     navigator.clipboard.writeText(text).then(() => {
         showMessage('Results copied to clipboard!', 'success');
     }).catch(() => {
-        showMessage('Could not copy to clipboard', 'danger');
+        showMessage('Could not copy to clipboard', 'error');
     });
 }
 
