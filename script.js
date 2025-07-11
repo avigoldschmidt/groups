@@ -65,15 +65,20 @@ function handleFile(file) {
         parseCSV(csvData);
         generateBtn.disabled = false;
         
-        // Update upload area to show file loaded
-        uploadArea.innerHTML = `
-            <div class="text-success">
-                <strong>${file.name}</strong> loaded successfully!
+        // Hide the upload section and show file loaded message
+        document.getElementById('uploadSection').style.display = 'none';
+        
+        // Show file loaded message
+        const fileLoadedMessage = document.getElementById('fileLoadedMessage');
+        fileLoadedMessage.innerHTML = `
+            <div class="alert alert-success">
+                <strong>File loaded:</strong> ${file.name}
+                <button class="btn btn-sm btn-outline-primary ms-2" onclick="location.reload()">
+                    Upload Different File
+                </button>
             </div>
-            <button class="btn btn-outline-primary mt-2" type="button" onclick="document.getElementById('fileInput').click()">
-                Choose Different File
-            </button>
         `;
+        fileLoadedMessage.style.display = 'block';
         
         showMessage(`CSV file "${file.name}" loaded successfully!`, 'success');
     };
