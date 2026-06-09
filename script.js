@@ -135,76 +135,58 @@ function generateGroups() {
 function createRandomGroups(participantsByColumn, numGroups, restrictions, maxAttempts = 5000) {
     let bestGroups = null;
     let bestViolations = Infinity;
-    
-    // Calculate distributions
-    const columnDistributions = participantsByColumn.map(column => {
-        const columnSize = column.length;
-        const basePerGroup = Math.floor(columnSize / numGroups);
-        const remainder = columnSize % numGroups;
-        
-        const distribution = Array(numGroups).fill(basePerGroup);
-        for (let i = 0; i < remainder; i++) {
-            distribution[i]++;
-        }
-        
-        return distribution;
-    });
-    
-    // If no restrictions, return simple proportional groups
-    if (restrictions.size === 0) {
-        const shuffledColumns = participantsByColumn.map(column => 
-            [...column].sort(() => Math.random() - 0.5)
-        );
-        
-        const groups = Array(numGroups).fill(null).map(() => []);
-        
-        shuffledColumns.forEach((shuffledColumn, columnIdx) => {
-            let startIdx = 0;
-            for (let groupIdx = 0; groupIdx < numGroups; groupIdx++) {
-                const count = columnDistributions[columnIdx][groupIdx];
-                const endIdx = startIdx + count;
-                groups[groupIdx].push(...shuffledColumn.slice(startIdx, endIdx));
-                startIdx = endIdx;
-            }
-        });
-        
-        return groups;
+
+    // Flatten all participants and calculate even group sizes
+    const allParticipants = participantsByColumn.flat();
+    const total = allParticipants.length;
+    const baseSize = Math.floor(total / numGroups);
+    const remainder = total % numGroups;
+
+    // groupSizes[i] = how many people go in group i
+    // First `remainder` groups get one extra person so sizes differ by at most 1
+    const groupSizes = Array(numGroups).fill(baseSize);
+    for (let i = 0; i < remainder; i++) {
+        groupSizes[i]++;
     }
-    
-    // Try multiple attempts to minimize violations
+
+    const runAttempt = () => {
+        // Shuffle all participants together as one pool
+        const shuffled = [...allParticipants].sort(() => Math.random() - 0.5);
+
+        // Slice into evenly-sized groups
+        const groups = [];
+        let cursor = 0;
+        for (let g = 0; g < numGroups; g++) {
+            groups.push(shuffled.slice(cursor, cursor + groupSizes[g]));
+            cursor += groupSizes[g];
+        }
+        return groups;
+    };
+
+    // If no restrictions, a single shuffle is sufficient
+    if (restrictions.size === 0) {
+        return runAttempt();
+    }
+
+    // Try multiple attempts to minimise restriction violations
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const shuffledColumns = participantsByColumn.map(column => 
-            [...column].sort(() => Math.random() - 0.5)
-        );
-        
-        const groups = Array(numGroups).fill(null).map(() => []);
-        
-        shuffledColumns.forEach((shuffledColumn, columnIdx) => {
-            let startIdx = 0;
-            for (let groupIdx = 0; groupIdx < numGroups; groupIdx++) {
-                const count = columnDistributions[columnIdx][groupIdx];
-                const endIdx = startIdx + count;
-                groups[groupIdx].push(...shuffledColumn.slice(startIdx, endIdx));
-                startIdx = endIdx;
-            }
-        });
-        
-        // Count violations
+        const groups = runAttempt();
+
         let totalViolations = 0;
         groups.forEach(group => {
             totalViolations += countViolations(group, restrictions);
         });
-        
+
         if (totalViolations === 0) {
             return groups;
         }
-        
+
         if (totalViolations < bestViolations) {
             bestViolations = totalViolations;
             bestGroups = groups.map(group => [...group]);
         }
     }
-    
+
     return bestGroups;
 }
 
