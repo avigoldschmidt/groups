@@ -40,7 +40,7 @@ function parseCSV(csvText) {
     
     // Find participant columns and restriction start
     const headerRow = rows[0];
-    const participantColumns = [];
+    let participantColumns = [];
     let restrictionStart = headerRow.length;
     
     for (let i = 0; i < headerRow.length; i++) {
